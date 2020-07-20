@@ -1,6 +1,6 @@
 'use strict';
 
-const listDefault = () => {
+const listDefault = (data) => {
 
   const selectCities = document.getElementById('select-cities'),
         listDefault = document.querySelector('.dropdown-lists__list--default');
@@ -14,7 +14,7 @@ const listDefault = () => {
     dropdownListsCol.className = 'dropdown-lists__col';
     listDefault.append(dropdownListsCol);
 
-    data.RU.forEach(item => {
+    data.forEach(item => {
   
       const dropdownListsCountryBlock = document.createElement('div');
       dropdownListsCountryBlock.className = 'dropdown-lists__countryBlock';
@@ -40,11 +40,11 @@ const listDefault = () => {
   selectCities.addEventListener('click', createDataList);
 };
 
-listDefault();
-
-const listSelect = () => {
+const listSelect = (data) => {
   
-  const dropdownLists = document.querySelector('.dropdown-lists__list--default');
+  const dropdownLists = document.querySelector('.dropdown-lists__list--default'),
+        listDefaultSelect = document.querySelector('.dropdown-lists__list--select'),
+        dropdown = document.querySelector('.dropdown');
 
   const createDataListSelect = (event) => {
     const target = event.target,
@@ -53,8 +53,24 @@ const listSelect = () => {
       return;
     }
 
-    const country = [...clickOnTotalLine.children][0].textContent,
-          listDefaultSelect = document.querySelector('.dropdown-lists__list--select');
+    let requesInterval,
+    count = 0;
+    const slideOnListSelect = () => {
+      
+      if(count < 100){
+        count += 5;
+        requesInterval = requestAnimationFrame(slideOnListSelect);
+        dropdownLists.style.transform = listDefaultSelect.style.transform =  `translateX(-${count}%)`;
+      }else{
+        cancelAnimationFrame(requesInterval);
+      }
+    };
+
+    const country = [...clickOnTotalLine.children][0].textContent;
+
+    dropdown.style.overflow = 'hidden';
+    dropdownLists.style.minWidth = '100%';
+    listDefaultSelect.style.minWidth = '100%';
 
     if (listDefaultSelect.children[0]){
       listDefaultSelect.children[0].remove();
@@ -64,7 +80,7 @@ const listSelect = () => {
     dropdownListsColSelect.className = 'dropdown-lists__col';
     listDefaultSelect.append(dropdownListsColSelect);
 
-    const countryArr = data.RU.filter(elem => elem.country === country);
+    const countryArr = data.filter(elem => elem.country === country);
 
     const dropdownListsCountryBlockSelect = document.createElement('div');
     dropdownListsCountryBlockSelect.className = 'dropdown-lists__countryBlock';
@@ -85,23 +101,38 @@ const listSelect = () => {
       dropdownListsColSelect.append(dropdownListsLineSelect);
     });
     listDefaultSelect.style.display = 'block';
+    requestAnimationFrame(slideOnListSelect);
   };
 
   dropdownLists.addEventListener('click', createDataListSelect);
 };
-  
-listSelect();
 
 const dropdownListsListSelectClose = () => {
 
-  const dropdownListsListSelect = document.querySelector('.dropdown-lists__list--select');
+  const dropdownListsListSelect = document.querySelector('.dropdown-lists__list--select'),
+        dropdownLists = document.querySelector('.dropdown-lists__list--default');
+
+  let requesInterval,
+      count = -100;
+
+  const slideOffListSelect = () => {
+
+  if(count < 0){
+    count += 5;
+    requesInterval = requestAnimationFrame(slideOffListSelect);
+    dropdownLists.style.transform = dropdownListsListSelect.style.transform =  `translateX(${count}%)`;
+  }else{
+    cancelAnimationFrame(requesInterval);
+  }
+  };
 
   dropdownListsListSelect.addEventListener('click', event => {
     const target = event.target,
           clickOnTotalLineSelect = target.closest('.dropdown-lists__total-line');
 
     if (clickOnTotalLineSelect){
-      dropdownListsListSelect.style.display = 'none';
+      count = -100;
+      requestAnimationFrame(slideOffListSelect);
     }
     
   });
@@ -109,7 +140,7 @@ const dropdownListsListSelectClose = () => {
 
 dropdownListsListSelectClose();
 
-const dropdownAutocomplete = () => {
+const dropdownAutocomplete = (data) => {
   
   const selectCities = document.getElementById('select-cities'),
         listDefault = document.querySelector('.dropdown-lists__list--default'),
@@ -154,9 +185,12 @@ const dropdownAutocomplete = () => {
         });
       } else {
         const dropdownListsLineAutocomplete = document.createElement('div');
-        dropdownListsLineAutocomplete.className = 'dropdown-lists__line';
+        dropdownListsLineAutocomplete.style.cssText = `
+        color: red;
+        padding-left: 2rem;
+        `;
         dropdownListsLineAutocomplete.innerHTML = `
-          <div class="dropdown-lists__city">Ничего не найдено</div>
+          <div>Ничего не найдено</div>
         `;
         dropdownListsCountryBlockAutocomplete.append(dropdownListsLineAutocomplete);
       }
@@ -164,7 +198,7 @@ const dropdownAutocomplete = () => {
     };
 
     const patternSities = () => {
-      data.RU.forEach(elem => {
+      data.forEach(elem => {
         elem.cities.forEach(item => {
           if (patternInput.test(item.name) === true) {
             itemArr.push(item);
@@ -186,6 +220,8 @@ const dropdownAutocomplete = () => {
       listDefault.style.display = 'block';
       dropdownListsListSelect.style.display = 'none';
       dropdownListsListAutocomplete.style.display = 'none';
+      listDefault.style.transform = 'translateX(0%)';
+      dropdownListsListSelect.style.transform = 'translateX(0%)';
     } else {
       selectCitiesLabel.style.display = 'none';
       listDefault.style.display = 'none';
@@ -198,9 +234,7 @@ const dropdownAutocomplete = () => {
   
 };
 
-dropdownAutocomplete();
-
-const changeInputText = () => {
+const changeInputText = (data) => {
   const dropdownLists = document.querySelector('.dropdown-lists'),
         selectCities = document.getElementById('select-cities'),
         selectCitiesLabel = document.querySelector('.label'),
@@ -230,11 +264,13 @@ const changeInputText = () => {
     dropdownListsListSelect.style.display = 'none';
     dropdownListsListAutocomplete.style.display = 'none';
     linkBtn.href = '#';
+    listDefault.style.transform = 'translateX(0%)';
+    dropdownListsListSelect.style.transform = 'translateX(0%)';
   });
 
   linkBtn.addEventListener('click', (event) => {
     checkedCityLink = event.target.href;
-    data.RU.forEach(item => {
+    data.forEach(item => {
       item.cities.forEach(elem => {
         if (checkedCityLink === elem.link){
           return checkedCityLink;
@@ -257,7 +293,7 @@ const changeInputText = () => {
       selectCities.value = dataLocation.children[0].textContent;
       selectCitiesLabel.style.display = 'none';
       closeButton.style.display = 'block';
-      data.RU.forEach(item => {
+      data.forEach(item => {
         item.cities.forEach(elem => {
           if (elem.name === dataLocation.children[0].textContent){
             linkBtn.href = elem.link;
@@ -275,4 +311,58 @@ const changeInputText = () => {
   });
 };
 
-changeInputText();
+const getData = () => {
+  const url = 'http://localhost:3000/RU',
+        inputCities = document.querySelector('.input-cities'),
+        statusMessage = document.createElement('div');
+
+  statusMessage.innerHTML = `
+    <div id="preloader">
+    <div class='sk-circle-bounce'>
+      <div class='sk-child sk-circle-1'></div>
+      <div class='sk-child sk-circle-2'></div>
+      <div class='sk-child sk-circle-3'></div>
+      <div class='sk-child sk-circle-4'></div>
+      <div class='sk-child sk-circle-5'></div>
+      <div class='sk-child sk-circle-6'></div>
+      <div class='sk-child sk-circle-7'></div>
+      <div class='sk-child sk-circle-8'></div>
+      <div class='sk-child sk-circle-9'></div>
+      <div class='sk-child sk-circle-10'></div>
+      <div class='sk-child sk-circle-11'></div>
+      <div class='sk-child sk-circle-12'></div>
+    </div>
+  </div>
+  `;
+  inputCities.append(statusMessage);
+
+  const postData = (url) => {
+    return fetch(url, {
+      method: 'GET',
+      headers: {
+      'Content-Type': 'application/json',
+      },
+      mode: 'cors',
+      cache: 'default',
+      redirect: 'follow'
+    });
+  };
+
+  postData(url)
+    .then((response) => {
+        if (response.status !== 200){
+            throw new Error('Status network not 200.');
+        }
+        return response.json();
+    })
+    .then((data) => {
+        statusMessage.innerHTML = '';
+        changeInputText(data);
+        dropdownAutocomplete(data);
+        listSelect(data);
+        listDefault(data);
+    })
+    .catch((error) => console.error(error));
+};
+
+getData();
