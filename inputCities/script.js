@@ -311,8 +311,8 @@ const changeInputText = (data) => {
   });
 };
 
-const getData = () => {
-  const url = 'http://localhost:3000/RU',
+const getData = (localKey) => {
+  const url = `http://localhost:3000/${localKey}`,
         inputCities = document.querySelector('.input-cities'),
         statusMessage = document.createElement('div');
 
@@ -365,4 +365,44 @@ const getData = () => {
     .catch((error) => console.error(error));
 };
 
-getData();
+const setCookieAndLocalStorage = (key, value, year, month, day, path, domain, secure) => {
+  let cookieStr = encodeURI(key) + '=' + encodeURI(value);
+  if (year) {
+    const expires = new Date(year, month - 1, day);
+    cookieStr += '; expires=' + expires.toGMTString();
+  }
+
+  cookieStr += path ? '; path=' + encodeURI(path) : '';
+  cookieStr += domain ? '; domain=' + encodeURI(domain) : '';
+  cookieStr += secure ? '; secure' : '';
+
+  document.cookie = cookieStr;
+};
+
+const start = () => {
+  const localStorageData = [JSON.parse(localStorage.getItem('personalCalculator'))],
+        docCookie = decodeURI(document.cookie).split('; ');
+
+  if(localStorageData[0] === null || docCookie === ['']){
+    this.reset();
+  }
+
+
+  let local = prompt('Введите язык (RU, EN, DE)');
+
+  if (local !== '' && local !== null){
+    local = local.trim().toUpperCase();
+    if (local === 'RU' || local === 'EN' || local === 'DE'){
+      getData(local);
+      setCookieAndLocalStorage(local, 'load', 2021, 10, 18);
+    } else {
+      return start();
+    }
+  } else {
+    return start();
+  }
+};
+
+start();
+
+//json-server --watch db_cities.json
